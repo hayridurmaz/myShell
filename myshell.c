@@ -137,7 +137,6 @@ void interactMode()
                                         continue;
                                 }
                                 int rc = pthread_create(&threads[j], NULL, SysCall, (void *)commandsThreaded[j]);
-                                //printf("commandsThreaded[j]:%s\n", commandsThreaded[j]);
                                 if (rc)
                                 {
                                         printf("ERROR; return code from pthread_create() is %d\n", rc);
@@ -147,9 +146,6 @@ void interactMode()
                         for (int i = 0; i < commandsThreadedLen; i++)
                                 pthread_join(threads[i], NULL);
                 }
-
-                //  free(commandsSeq);
-                //  free(commandsThreaded);
                 if (cikis == 1)
                 {
                         continue;
@@ -163,12 +159,8 @@ void *SysCall(void *call)
 {
         char *str;
         int i;
-
         str = (char *)call;
-        //wait(10* rand());
         system(str);
-        //wait(10* rand());
-
         pthread_exit(NULL);
 }
 
