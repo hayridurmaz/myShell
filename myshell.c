@@ -42,7 +42,7 @@ void batchMode(char *file)
         int cikis = 0;
         while (fgets(inputptr, 1000, fptr))
         {
-                int commandsSeqLen = split(inputptr, ';', &commandsSeq);
+                int commandsSeqLen = split(inputptr, '|', commandsSeq);
                 if (commandsSeqLen == 0)
                 {
                         fgets(inputptr, 1000, fptr);
@@ -55,17 +55,19 @@ void batchMode(char *file)
                         {
                                 continue;
                         }
-                        int commandsThreadedLen = split(commandsSeq[i], '|', &commandsThreaded);
+                        int commandsThreadedLen = split(commandsSeq[i], ';', commandsThreaded);
                         pthread_t threads[commandsThreadedLen];
-
+                        int threadsLen = 0;
                         for (int j = 0; j < commandsThreadedLen; j++)
                         {
+
                                 if (strstr(commandsThreaded[j], "quit") != NULL || strstr(commandsThreaded[j], "exit") != NULL)
                                 {
                                         cikis = 1;
                                         continue;
                                 }
-                                int rc = pthread_create(&threads[j], NULL, SysCall, (void *)commandsThreaded[j]);
+                                int rc = pthread_create(&threads[threadsLen++], NULL, SysCall, (void *)commandsThreaded[j]);
+
                                 //printf("commandsThreaded[j]:%s\n", commandsThreaded[j]);
                                 if (rc)
                                 {
@@ -73,8 +75,10 @@ void batchMode(char *file)
                                         exit(-1);
                                 }
                         }
-                        for (int i = 0; i < commandsThreadedLen; i++)
+                        for (int i = 0; i < threadsLen; i++)
+                        {
                                 pthread_join(threads[i], NULL);
+                        }
                 }
                 //printf("CİKİS:%d\n", cikis);
                 if (cikis == 1)
@@ -111,7 +115,7 @@ void interactMode()
                 //system(command);
                 //system(inputptr);
 
-                int commandsSeqLen = split(inputptr, ';', &commandsSeq);
+                int commandsSeqLen = split(inputptr, '|', commandsSeq);
                 if (commandsSeqLen == 0)
                 {
                         printf("myshell:>");
@@ -126,9 +130,9 @@ void interactMode()
                         {
                                 continue;
                         }
-                        int commandsThreadedLen = split(commandsSeq[i], '|', &commandsThreaded);
+                        int commandsThreadedLen = split(commandsSeq[i], ';', commandsThreaded);
                         pthread_t threads[commandsThreadedLen];
-
+                        int threadsLen = 0;
                         for (int j = 0; j < commandsThreadedLen; j++)
                         {
                                 if (strstr(commandsThreaded[j], "quit") != NULL || strstr(commandsThreaded[j], "exit") != NULL)
@@ -136,14 +140,14 @@ void interactMode()
                                         cikis = 1;
                                         continue;
                                 }
-                                int rc = pthread_create(&threads[j], NULL, SysCall, (void *)commandsThreaded[j]);
+                                int rc = pthread_create(&threads[threadsLen++], NULL, SysCall, (void *)commandsThreaded[j]);
                                 if (rc)
                                 {
                                         printf("ERROR; return code from pthread_create() is %d\n", rc);
                                         exit(-1);
                                 }
                         }
-                        for (int i = 0; i < commandsThreadedLen; i++)
+                        for (int i = 0; i < threadsLen; i++)
                                 pthread_join(threads[i], NULL);
                 }
                 if (cikis == 1)
@@ -169,7 +173,7 @@ int split(char const *input, char const delim, char *Commands[])
 
         char *tofree = malloc(sizeof(char) * strlen(input));
 
-        if (*input != NULL)
+        if (input != NULL)
         {
                 char *token;
 
